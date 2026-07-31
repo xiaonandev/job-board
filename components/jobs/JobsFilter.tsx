@@ -1,12 +1,49 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React from "react";
+import { set } from "date-fns";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { FiDelete } from "react-icons/fi";
+type Tags = {
+  q?: string;
+  type?: string;
+  location?: string;
+};
 
 const JobsFilter = () => {
   const router = useRouter();
+  const params = useSearchParams();
+  const q = params.get("q");
+  const type = params.get("type");
+  const location = params.get("location");
+
+  const [tags, setTags] = useState<Tags>({});
+  const entries = Object.entries(tags) as [keyof Tags, string][];
+  const updateSearch = (newTags: Tags) => {
+    const params = new URLSearchParams();
+
+    if (newTags.q) params.set("q", newTags.q);
+    if (newTags.type) params.set("type", newTags.type);
+    if (newTags.location) params.set("location", newTags.location);
+
+    setTags(newTags);
+
+    router.push(`/jobs?${params.toString()}`, {
+      scroll: false,
+    });
+  };
+
+  const removeTag = (key: keyof Tags) => {
+    const newTags = { ...tags };
+
+    delete newTags[key];
+
+    updateSearch(newTags);
+  };
+
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const formData = new FormData(e.currentTarget);
     const q = formData.get("q") as string;
     const type = formData.get("type") as string;
@@ -18,6 +55,14 @@ const JobsFilter = () => {
     if (location) params.set("location", location);
 
     router.push(`/jobs?${params.toString()}`, { scroll: false });
+
+    const newTags: Tags = {};
+
+    if (q) newTags.q = q;
+    if (type) newTags.type = type;
+    if (location) newTags.location = location;
+
+    updateSearch(newTags);
   };
   return (
     <div>
@@ -53,6 +98,19 @@ const JobsFilter = () => {
             Search
           </button>
         </form>
+        {entries.map(([key, value]) => {
+          return (
+            <div
+              key={key}
+              className="mt-5 inline-flex gap-2 bg-gray-200 border-gray-300 border rounded-full px-2 mx-1"
+            >
+              <p>{value}</p>
+              <button onClick={() => removeTag(key)}>
+                <FiDelete />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
