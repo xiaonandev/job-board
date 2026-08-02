@@ -47,7 +47,7 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div>
+        {/* <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Posted Jobs</h2>
             <Link
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
               ))
             )}
           </div>
-        </div>
+        </div> */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             Your Applications

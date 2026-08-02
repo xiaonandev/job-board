@@ -1,42 +1,70 @@
 import JobsFilter from "@/components/jobs/JobsFilter";
+import PaginationButton from "@/components/ui/PaginationButton";
 import { prisma } from "@/src/lib/prisma";
+import { Prisma } from "@prisma/client";
 import Link from "next/link";
-import React from "react";
 
 const JobsPage = async ({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-  const { q, type, location } = await searchParams;
+  const PAGE_SIZE = 10;
+
+  const { q, type, location, posted, page } = await searchParams;
   const query = q as string | undefined;
   const searchType = type as string | undefined;
   const searchLocation = location as string | undefined;
+  const searchPostedAt = posted as string | undefined;
+  const searchPage = Number(page) || 1;
+  const days = Number(searchPostedAt);
+  const startDate = searchPostedAt
+    ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    : undefined;
+
+  const where: Prisma.JobWhereInput = {
+    AND: [
+      q
+        ? {
+            OR: [
+              { title: { contains: query, mode: "insensitive" } },
+              { company: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {},
+      type ? { type: searchType } : {},
+      location
+        ? { location: { contains: searchLocation, mode: "insensitive" } }
+        : {},
+      posted && startDate
+        ? {
+            postedAt: {
+              gte: startDate,
+            },
+          }
+        : {},
+    ],
+  };
 
   const jobs = await prisma.job.findMany({
-    where: {
-      AND: [
-        q
-          ? {
-              OR: [
-                { title: { contains: query, mode: "insensitive" } },
-                { company: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-              ],
-            }
-          : {},
-        type ? { type: searchType } : {},
-        searchLocation
-          ? { location: { contains: searchLocation, mode: "insensitive" } }
-          : {},
-      ],
-    },
+    where: where,
+    skip: (searchPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     orderBy: { postedAt: "desc" },
     include: { postedBy: true },
   });
+
+  const totalJobs = await prisma.job.count({
+    where: where,
+  });
+  const totalPages = Math.ceil(totalJobs / PAGE_SIZE);
+
   return (
     <div className="space-y-8">
       <JobsFilter />
+      <PaginationButton page={searchPage} totalPages={totalPages} />
+
       <div className="grid gap-6">
         {jobs.map((job) => (
           <div
