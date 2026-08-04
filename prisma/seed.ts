@@ -1,12 +1,6 @@
 import { prisma } from "@/src/lib/prisma";
 
 async function main() {
-  const user = await prisma.user.findFirst();
-
-  if (!user) {
-    throw new Error("No user found");
-  }
-
   const jobs = Array.from({ length: 30 }, (_, index) => ({
     title: `Frontend Developer ${index + 1}`,
     company: `Company ${index + 1}`,
@@ -22,7 +16,6 @@ async function main() {
 
     postedAt: new Date(Date.now() - index * 24 * 60 * 60 * 1000),
 
-    PostedById: user.id,
   }));
 
   await prisma.job.createMany({

@@ -12,7 +12,6 @@ export default async function jobPage({
   const jobId = (await params).id;
   const job = await prisma.job.findUnique({
     where: { id: jobId },
-    include: { postedBy: true },
   });
   if (!job) {
     notFound();
@@ -41,8 +40,6 @@ export default async function jobPage({
             )}
           </div>
           <div className="flex items-center text-sm text-gray-500">
-            <span>Posted by {job.postedBy.name}</span>
-            <span className="mx-2">•</span>
             <span>
               {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
             </span>

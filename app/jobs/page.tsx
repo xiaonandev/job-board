@@ -52,7 +52,6 @@ const JobsPage = async ({
     skip: (searchPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
     orderBy: { postedAt: "desc" },
-    include: { postedBy: true },
   });
 
   const totalJobs = await prisma.job.count({
@@ -91,10 +90,7 @@ const JobsPage = async ({
                 )}
               </div>
             </div>
-            <div className="flex justify-between items-center mt-6">
-              <span className="text-sm text-gray-500">
-                Posted by {job.postedBy.name}
-              </span>
+            <div className="flex justify-end items-center mt-6">
               <Link
                 href={`/jobs/${job.id}`}
                 className="text-indigo-600 hover:text-indigo-700 font-medium"

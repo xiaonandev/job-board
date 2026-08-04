@@ -7,13 +7,6 @@ export default async function Home() {
     orderBy: {
       postedAt: "desc",
     },
-    include: {
-      postedBy: {
-        select: {
-          name: true,
-        },
-      },
-    },
   });
 
   return (
